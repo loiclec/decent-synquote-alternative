@@ -186,7 +186,7 @@ impl StructField {
         }
     }
     #[inline(never)]
-    pub fn raw_ident(&self) -> Ident {
+    pub fn access_ident(&self) -> Ident {
         match &self.identifier {
             StructFieldIdentifier::Named(x) => x.clone(),
             StructFieldIdentifier::Position(i) => ident!(i),
