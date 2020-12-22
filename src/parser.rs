@@ -85,6 +85,7 @@ macro_rules! ts {
     };
 }
 
+#[macro_export]
 macro_rules! ident {
     ($($x:expr) *) => {{
         let mut s = String::new();
@@ -388,6 +389,13 @@ impl TokenBuilderExtend for Generics {
     }
 }
 impl Generics {
+    pub fn removing_eq_type(&self) -> Self {
+        let mut new = self.clone();
+        for type_param in new.type_params.iter_mut() {
+            type_param.equal_ty = None;
+        }
+        new
+    }
     pub fn removing_bounds_and_eq_type(&self) -> Self {
         let mut new = self.clone();
         for lifetime_param in new.lifetime_params.iter_mut() {
