@@ -3,6 +3,11 @@ name = "decent-synquote-alternative"
 version = "0.1.0"
 authors = ["Loïc Lecrenier <loic.lecrenier@me.com>"]
 edition = "2018"
+license = "MIT"
+keywords = ["proc-macro"]
+repository = "https://git.sr.ht/~loic/decent-synquote-alternative"
+description = "An alternative to the syn and quote crates for when you want to write your own derive proc-macro. It was originally based on the microserde code, but has grown a lot since then. It is not as complete, documented, or well-tested as syn or quote, but it fits my needs, and it compiles quite quickly."
+categories = ["development-tools::procedural-macro-helpers"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
