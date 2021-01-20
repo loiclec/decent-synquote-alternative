@@ -1,5 +1,4 @@
-
-use proc_macro2::{Delimiter, Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
+use proc_macro2::{Delimiter, Group, Ident, Literal, Punct, TokenStream, TokenTree};
 
 pub trait TokenBuilderExtend {
     fn add_to(&self, tb: &mut TokenBuilder);
@@ -131,61 +130,36 @@ impl TokenBuilder {
 
     #[inline(never)]
     pub fn add(&mut self, what: &str) {
-        for part in what.split(char::is_whitespace) {
-            match part {
+        fn is_delimiter(c: char) -> bool {
+            matches!(c, '{' | '(' | '[' | '}' | ')' | ']')
+        }
+
+        let delimiter_matches = what.matches(is_delimiter);
+        let mut between_delimiter_matches = what.split(is_delimiter);
+
+        if let Some(first_match_no_delimiter) = between_delimiter_matches.next() {
+            let ts = first_match_no_delimiter.parse::<TokenStream>().expect(&format!(
+                "Could not parse the following string into a token stream: {}",
+                first_match_no_delimiter
+            ));
+            self.extend(&ts);
+        }
+
+        for (delimiter, ts) in delimiter_matches.zip(between_delimiter_matches) {
+            match delimiter {
                 "{" => self.push_group(Delimiter::Brace),
                 "(" => self.push_group(Delimiter::Parenthesis),
                 "[" => self.push_group(Delimiter::Bracket),
                 "}" => self.pop_group(Delimiter::Brace),
                 ")" => self.pop_group(Delimiter::Parenthesis),
                 "]" => self.pop_group(Delimiter::Bracket),
-                "+" | "-" | "*" | "/" | "%" | "^" | "!" | "&" | "|" | "&&" | "||" | "<<" | ">>" | "+=" | "-="
-                | "*=" | "/=" | "%=" | "^=" | "&=" | "|=" | "<<=" | ">>=" | "=" | "==" | "!=" | ">" | "<" | ">="
-                | "<=" | "@" | "." | ".." | "..." | "..=" | "," | ";" | ":" | "::" | "->" | "=>" | "#" | "$" | "?" => {
-                    let mut last = None;
-                    for c in part.chars() {
-                        if let Some(last) = last {
-                            self.extend_tree(TokenTree::from(Punct::new(last, Spacing::Joint)));
-                        }
-                        last = Some(c);
-                    }
-                    if let Some(last) = last {
-                        self.extend_tree(TokenTree::from(Punct::new(last, Spacing::Alone)));
-                    }
-                }
-                _ => {
-                    if part.len() == 0 {
-                        continue;
-                    }
-                    let mut chars = part.chars();
-                    match chars.next().unwrap() {
-                        '0'..='9' => {
-                            static INTEGER_ERROR: &'static str = "Can't parse number in TokenBuilder::add. Only unsuffixed usize in base 10 are supported.";
-                            if let Some(next) = chars.next() {
-                                match next {
-                                    'b' | 'o' | 'x' => panic!(INTEGER_ERROR),
-                                    _ => (),
-                                }
-                            }
-                            self.extend_tree(TokenTree::from(Literal::usize_unsuffixed(
-                                part.parse().expect(INTEGER_ERROR),
-                            )))
-                        }
-                        '\'' => {
-                            if let Some('\'') = chars.last() {
-                                panic!("Character literals are not supported in TokenBuilder::add");
-                            } else {
-                                self.extend_tree(Punct::new('\'', Spacing::Joint));
-                                self.extend_tree(Ident::new(part.strip_prefix("\'").unwrap(), Span::call_site()));
-                            }
-                        }
-                        '"' => {
-                            panic!("String literals are not supported in TokenBuilder::add");
-                        }
-                        _ => self.extend_tree(TokenTree::from(Ident::new(part, Span::call_site()))),
-                    }
-                }
-            };
+                _ => unreachable!(),
+            }
+            let ts = ts.parse::<TokenStream>().expect(&format!(
+                "Could not parse the following string into a token stream: {}",
+                ts
+            ));
+            self.extend(&ts);
         }
     }
 
