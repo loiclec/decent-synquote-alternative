@@ -4,49 +4,41 @@ pub trait TokenBuilderExtend {
     fn add_to(&self, tb: &mut TokenBuilder);
 }
 impl TokenBuilderExtend for Ident {
-    #[inline(never)]
     fn add_to(&self, tb: &mut TokenBuilder) {
         tb.extend_tree(self.clone());
     }
 }
 impl TokenBuilderExtend for Literal {
-    #[inline(never)]
     fn add_to(&self, tb: &mut TokenBuilder) {
         tb.extend_tree(self.clone());
     }
 }
 impl TokenBuilderExtend for Group {
-    #[inline(never)]
     fn add_to(&self, tb: &mut TokenBuilder) {
         tb.extend_tree(self.clone());
     }
 }
 impl TokenBuilderExtend for Punct {
-    #[inline(never)]
     fn add_to(&self, tb: &mut TokenBuilder) {
         tb.extend_tree(self.clone());
     }
 }
 impl TokenBuilderExtend for TokenTree {
-    #[inline(never)]
     fn add_to(&self, tb: &mut TokenBuilder) {
         tb.extend_tree(self.clone());
     }
 }
 impl TokenBuilderExtend for TokenStream {
-    #[inline(never)]
     fn add_to(&self, tb: &mut TokenBuilder) {
         tb.stream(self.clone());
     }
 }
 impl TokenBuilderExtend for usize {
-    #[inline(never)]
     fn add_to(&self, tb: &mut TokenBuilder) {
         tb.extend_tree(Literal::usize_unsuffixed(*self));
     }
 }
 impl TokenBuilderExtend for f64 {
-    #[inline(never)]
     fn add_to(&self, tb: &mut TokenBuilder) {
         tb.extend_tree(Literal::f64_suffixed(*self));
     }
@@ -55,7 +47,6 @@ impl<T> TokenBuilderExtend for Option<T>
 where
     T: TokenBuilderExtend,
 {
-    #[inline(never)]
     fn add_to(&self, tb: &mut TokenBuilder) {
         if let Some(x) = self {
             x.add_to(tb)
@@ -66,7 +57,6 @@ impl<T> TokenBuilderExtend for Vec<T>
 where
     T: TokenBuilderExtend,
 {
-    #[inline(never)]
     fn add_to(&self, tb: &mut TokenBuilder) {
         for x in self.iter() {
             x.add_to(tb)
@@ -74,13 +64,11 @@ where
     }
 }
 impl TokenBuilderExtend for String {
-    #[inline(never)]
     fn add_to(&self, tb: &mut TokenBuilder) {
         tb.add(self)
     }
 }
 impl TokenBuilderExtend for &str {
-    #[inline(never)]
     fn add_to(&self, tb: &mut TokenBuilder) {
         tb.add(self)
     }
@@ -91,14 +79,12 @@ pub struct TokenBuilder {
 }
 
 impl TokenBuilder {
-    #[inline(never)]
     pub fn new() -> Self {
         Self {
             groups: vec![(Delimiter::None, TokenStream::new())],
         }
     }
 
-    #[inline(never)]
     pub fn end(mut self) -> TokenStream {
         if self.groups.len() != 1 {
             panic!("Groups not empty, you missed a pop_group")
@@ -106,29 +92,24 @@ impl TokenBuilder {
         self.groups.pop().unwrap().1
     }
 
-    // #[inline(never)]
     // pub fn eprint(&self) {
     //     eprintln!("{}", self.groups.last().unwrap().1.to_string());
     // }
 
-    #[inline(never)]
     pub fn extend_tree<T: Into<TokenTree>>(&mut self, tt: T) {
         self.groups.last_mut().unwrap().1.extend(Some(tt.into()));
     }
 
-    #[inline(never)]
     pub fn extend<T: TokenBuilderExtend>(&mut self, x: &T) {
         x.add_to(self)
     }
 
-    #[inline(never)]
     pub fn stream(&mut self, what: TokenStream) {
         for c in what.into_iter() {
             self.extend(&c);
         }
     }
 
-    #[inline(never)]
     pub fn add(&mut self, what: &str) {
         fn is_delimiter(c: char) -> bool {
             matches!(c, '{' | '(' | '[' | '}' | ')' | ']')
@@ -163,12 +144,10 @@ impl TokenBuilder {
         }
     }
 
-    #[inline(never)]
     pub fn push_group(&mut self, delim: Delimiter) {
         self.groups.push((delim, TokenStream::new()));
     }
 
-    #[inline(never)]
     pub fn pop_group(&mut self, delim: Delimiter) {
         if self.groups.len() < 2 {
             // eprintln!("Stack dump for error:\n{}", self.stack_as_string());

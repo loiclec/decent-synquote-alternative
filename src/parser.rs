@@ -1,4 +1,3 @@
-
 use proc_macro2::token_stream::IntoIter;
 use proc_macro2::{Delimiter, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 
@@ -104,7 +103,7 @@ pub struct TokenParser {
     current: Option<TokenTree>,
 }
 
-#[inline(never)]
+
 fn token_tree_as_punct(tt: &TokenTree, what: char) -> Option<Punct> {
     if let TokenTree::Punct(p) = tt {
         if p.as_char() == what {
@@ -117,7 +116,7 @@ fn token_tree_as_punct(tt: &TokenTree, what: char) -> Option<Punct> {
     }
 }
 
-#[inline(never)]
+
 fn token_tree_as_ident(tt: &TokenTree, what: &str) -> Option<Ident> {
     if let TokenTree::Ident(i) = tt {
         if i.to_string() == what {
@@ -178,14 +177,14 @@ pub struct StructField {
     pub ty: TokenStream,
 }
 impl StructField {
-    #[inline(never)]
+    
     pub fn access(&self) -> TokenStream {
         match &self.identifier {
             StructFieldIdentifier::Named(x) => ts!(x),
             StructFieldIdentifier::Position(i) => ts!(i),
         }
     }
-    #[inline(never)]
+    
     pub fn safe_ident(&self) -> Ident {
         match &self.identifier {
             StructFieldIdentifier::Named(x) => x.clone(),
@@ -214,19 +213,15 @@ pub struct EnumItem {
     pub data: Option<EnumItemData>,
 }
 impl EnumItem {
-    #[inline(never)]
+    
     pub fn get_struct_data(&self) -> Option<(StructKind, &[StructField])> {
         match &self.data {
             None | Some(EnumItemData::Discriminant(_)) => None,
             Some(EnumItemData::Struct(kind, fields)) => Some((*kind, fields)),
         }
     }
-    #[inline(never)]
-    pub fn get_fields_unchecked(&self) -> &[StructField] {
-        self.get_struct_data().unwrap().1
-    }
 
-    #[inline(never)]
+    
     pub fn pattern_match(&self, enum_ident: &Ident, binding_append: Option<Ident>) -> TokenStream {
         match &self.data {
             Some(EnumItemData::Struct(kind, fields)) => ts!(
@@ -425,7 +420,7 @@ impl TokenBuilderExtend for WhereClause {
 }
 
 impl TokenParser {
-    #[inline(never)]
+    
     pub fn new(start: TokenStream) -> Self {
         let mut ret = Self {
             backtracked: None,
@@ -436,7 +431,7 @@ impl TokenParser {
         ret
     }
 
-    #[inline(never)]
+    
     pub fn backtrack(&mut self, ts: TokenStream) {
         if !ts.is_empty() {
             if let Some(backtracked) = &mut self.backtracked {
@@ -447,7 +442,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn peek(&mut self) -> Option<&TokenTree> {
         if let Some(backtracked) = &mut self.backtracked {
             backtracked.peek()
@@ -456,7 +451,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn advance(&mut self) {
         if let Some(backtracked) = &mut self.backtracked {
             backtracked.advance();
@@ -475,7 +470,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn advance_if<T>(&mut self, cond: impl FnOnce(&TokenTree) -> Option<T>) -> Option<T> {
         let value = self.peek();
         if let Some(tok) = value {
@@ -490,7 +485,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn open_delim(&mut self, delim: Delimiter) -> bool {
         let iter = if let Some(TokenTree::Group(group)) = self.peek() {
             if group.delimiter() == delim {
@@ -511,22 +506,22 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn open_brace(&mut self) -> bool {
         self.open_delim(Delimiter::Brace)
     }
 
-    #[inline(never)]
+    
     pub fn open_paren(&mut self) -> bool {
         self.open_delim(Delimiter::Parenthesis)
     }
 
-    // #[inline(never)]
+    // 
     // pub fn open_bracket(&mut self) -> bool {
     //     self.open_delim(Delimiter::Bracket)
     // }
 
-    #[inline(never)]
+    
     pub fn is_eot(&mut self) -> bool {
         if self.current.is_none() && self.iter_stack.len() != 0 {
             return true;
@@ -535,7 +530,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn eat_eot(&mut self) -> bool {
         // current is None
         if self.is_eot() {
@@ -548,12 +543,12 @@ impl TokenParser {
         return false;
     }
 
-    #[inline(never)]
+    
     pub fn eat_ident(&mut self, what: &str) -> Option<Ident> {
         self.advance_if(|tt| token_tree_as_ident(tt, what))
     }
 
-    // #[inline(never)]
+    // 
     // pub fn is_punct(&mut self, what: char) -> bool {
     //     // check if our punct is multichar.
     //     if let Some(tt) = self.peek() {
@@ -563,7 +558,7 @@ impl TokenParser {
     //     }
     // }
 
-    #[inline(never)]
+    
     pub fn eat_punct_with_spacing(&mut self, what: char, spacing: Spacing) -> Option<Punct> {
         self.advance_if(|tt| {
             if let TokenTree::Punct(p) = tt {
@@ -578,12 +573,12 @@ impl TokenParser {
         })
     }
 
-    #[inline(never)]
+    
     pub fn eat_punct(&mut self, what: char) -> Option<Punct> {
         self.advance_if(|tt| token_tree_as_punct(tt, what))
     }
 
-    #[inline(never)]
+    
     pub fn eat_any_ident(&mut self) -> Option<Ident> {
         self.advance_if(|tt| {
             if let TokenTree::Ident(id) = tt {
@@ -594,7 +589,7 @@ impl TokenParser {
         })
     }
 
-    #[inline(never)]
+    
     pub fn eat_literal(&mut self) -> Option<Literal> {
         self.advance_if(|tt| {
             if let TokenTree::Literal(l) = tt {
@@ -605,7 +600,7 @@ impl TokenParser {
         })
     }
 
-    #[inline(never)]
+    
     pub fn eat_type_bound_where_clause_item(&mut self) -> Option<WhereClauseItem> {
         let for_lifetimes = self.eat_for_lifetimes();
         if let Some(ty) = self.eat_type() {
@@ -626,7 +621,7 @@ impl TokenParser {
         None
     }
 
-    #[inline(never)]
+    
     pub fn eat_lifetime_bounds(&mut self) -> Option<TokenStream> {
         let mut tb = TokenBuilder::new();
         while let Some(lt) = self.eat_lifetime() {
@@ -641,7 +636,7 @@ impl TokenParser {
         Some(tb.end())
     }
 
-    #[inline(never)]
+    
     pub fn eat_lifetime_where_clause_item(&mut self) -> Option<WhereClauseItem> {
         if let Some(lt) = self.eat_lifetime() {
             let lhs = lt;
@@ -660,13 +655,13 @@ impl TokenParser {
         None
     }
 
-    #[inline(never)]
+    
     pub fn eat_where_clause_item(&mut self) -> Option<WhereClauseItem> {
         self.eat_lifetime_where_clause_item()
             .or_else(|| self.eat_type_bound_where_clause_item())
     }
 
-    #[inline(never)]
+    
     pub fn eat_where_clause(&mut self) -> Option<WhereClause> {
         if let Some(_) = self.eat_ident("where") {
             let mut items = Vec::new();
@@ -684,7 +679,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn eat_struct(&mut self) -> Option<Struct> {
         let visibility = self.eat_visibility();
         if let Some(_) = self.eat_ident("struct") {
@@ -739,7 +734,7 @@ impl TokenParser {
         None
     }
 
-    #[inline(never)]
+    
     pub fn eat_enum_item(&mut self) -> Option<EnumItem> {
         let mut attributes = Vec::new();
         while let Some(attr) = self.eat_outer_attribute() {
@@ -794,7 +789,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn eat_enumeration(&mut self) -> Option<Enum> {
         let visibility = self.eat_visibility();
 
@@ -827,7 +822,7 @@ impl TokenParser {
         return None;
     }
 
-    #[inline(never)]
+    
     pub fn eat_lifetime_param(&mut self) -> Option<LifetimeParam> {
         let mut attributes = Vec::new();
         while let Some(outer_attribute) = self.eat_outer_attribute() {
@@ -853,7 +848,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn eat_type_param(&mut self) -> Option<TypeParam> {
         let mut attributes = Vec::new();
         while let Some(attr) = self.eat_outer_attribute() {
@@ -892,7 +887,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn eat_generics(&mut self) -> Generics {
         if let Some(_) = self.eat_punct('<') {
             let mut lifetime_params = Vec::new();
@@ -922,7 +917,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn eat_tuple_fields(&mut self) -> Vec<StructField> {
         let mut i = 0;
         if let Some(field) = self.eat_tuple_field(i) {
@@ -943,7 +938,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn eat_tuple_field(&mut self, i: usize) -> Option<StructField> {
         let mut attributes = Vec::new();
         while let Some(attribute) = self.eat_outer_attribute() {
@@ -963,7 +958,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn eat_struct_fields(&mut self) -> Vec<StructField> {
         let mut fields = Vec::new();
         while let Some(field) = self.eat_struct_field() {
@@ -976,7 +971,7 @@ impl TokenParser {
         fields
     }
 
-    #[inline(never)]
+    
     pub fn eat_struct_field(&mut self) -> Option<StructField> {
         let mut attributes = vec![];
         while let Some(outer_attribute) = self.eat_outer_attribute() {
@@ -1002,7 +997,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn eat_group_angle_bracket(&mut self) -> Option<TokenStream> {
         let mut tb = TokenBuilder::new();
         // if we have a <, keep running and keep a < stack
@@ -1042,7 +1037,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)] // same as lifetime_token because I don't distinguish between ident and keywords
+     // same as lifetime_token because I don't distinguish between ident and keywords
     pub fn eat_lifetime_or_label(&mut self) -> Option<TokenStream> {
         let mut tb = TokenBuilder::new();
         if let Some(ap) = self.eat_punct('\'') {
@@ -1059,7 +1054,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn eat_lifetime(&mut self) -> Option<TokenStream> {
         self.eat_lifetime_or_label().or_else(|| {
             let mut tb = TokenBuilder::new();
@@ -1078,7 +1073,7 @@ impl TokenParser {
         })
     }
 
-    #[inline(never)]
+    
     pub fn eat_double_colon(&mut self) -> Option<TokenStream> {
         if let Some(c1) = self.eat_punct_with_spacing(':', Spacing::Joint) {
             let mut tb = TokenBuilder::new();
@@ -1095,7 +1090,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn eat_fn_arrow(&mut self) -> Option<TokenStream> {
         if let Some(c1) = self.eat_punct_with_spacing('-', Spacing::Joint) {
             let mut tb = TokenBuilder::new();
@@ -1112,7 +1107,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn eat_type_path_segment(&mut self) -> Option<TokenStream> {
         let mut tb = TokenBuilder::new();
         if let Some(ident) = self.eat_any_ident() {
@@ -1145,7 +1140,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn eat_type_path(&mut self) -> Option<TokenStream> {
         let mut tb = TokenBuilder::new();
         if let Some(colons) = self.eat_double_colon() {
@@ -1169,7 +1164,7 @@ impl TokenParser {
         Some(tb.end())
     }
 
-    #[inline(never)]
+    
     pub fn eat_raw_pointer_type(&mut self) -> Option<TokenStream> {
         if let Some(star) = self.eat_punct('*') {
             let mut tb = TokenBuilder::new();
@@ -1192,7 +1187,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn eat_qualified_path_in_type(&mut self) -> Option<TokenStream> {
         // qualified path type
         let mut tb = TokenBuilder::new();
@@ -1227,7 +1222,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn eat_for_lifetimes(&mut self) -> Option<TokenStream> {
         let mut tb = TokenBuilder::new();
 
@@ -1245,7 +1240,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn eat_outer_attribute(&mut self) -> Option<TokenStream> {
         let nbr_sign = self.eat_punct('#')?;
         if let Some(content) = self.eat_group(Delimiter::Bracket) {
@@ -1258,7 +1253,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn eat_simple_path(&mut self) -> Option<TokenStream> {
         let mut tb = TokenBuilder::new();
         if let Some(db) = self.eat_double_colon() {
@@ -1284,7 +1279,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn eat_macro_invocation(&mut self) -> Option<TokenStream> {
         if let Some(sp) = self.eat_simple_path() {
             let mut tb = TokenBuilder::new();
@@ -1301,7 +1296,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)] // TODO: check for backtracking correctness
+     // TODO: check for backtracking correctness
     pub fn eat_trait_bound(&mut self) -> Option<TokenStream> {
         if let Some(g) = self.eat_group(Delimiter::Parenthesis) {
             let mut tb = TokenBuilder::new();
@@ -1330,7 +1325,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn eat_trait_object_type_one_bound(&mut self) -> Option<TokenStream> {
         let mut tb = TokenBuilder::new();
         if let Some(dyn_ident) = self.eat_ident("dyn") {
@@ -1345,7 +1340,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn eat_impl_trait_type_one_bound(&mut self) -> Option<TokenStream> {
         if let Some(impl_ident) = self.eat_ident("impl") {
             let mut tb = TokenBuilder::new();
@@ -1362,7 +1357,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn eat_type_no_bounds(&mut self) -> Option<TokenStream> {
         let mut tb = TokenBuilder::new();
 
@@ -1414,7 +1409,7 @@ impl TokenParser {
         return Some(tb.end());
     }
 
-    #[inline(never)]
+    
     pub fn eat_type_param_bounds(&mut self) -> Option<TokenStream> {
         if let Some(tpb) = self.eat_type_param_bound() {
             let mut tb = TokenBuilder::new();
@@ -1431,12 +1426,12 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn eat_type_param_bound(&mut self) -> Option<TokenStream> {
         self.eat_lifetime().or_else(|| self.eat_trait_bound())
     }
 
-    #[inline(never)]
+    
     pub fn eat_impl_trait_type(&mut self) -> Option<TokenStream> {
         if let Some(impl_ident) = self.eat_ident("impl") {
             let mut tb = TokenBuilder::new();
@@ -1453,7 +1448,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn eat_trait_object_type(&mut self) -> Option<TokenStream> {
         let mut tb = TokenBuilder::new();
         if let Some(dyn_ident) = self.eat_ident("dyn") {
@@ -1468,14 +1463,14 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn eat_type(&mut self) -> Option<TokenStream> {
         self.eat_type_no_bounds()
             .or_else(|| self.eat_impl_trait_type())
             .or_else(|| self.eat_trait_object_type())
     }
 
-    #[inline(never)]
+    
     pub fn eat_group(&mut self, delim: Delimiter) -> Option<TokenTree> {
         if let Some(TokenTree::Group(group)) = self.peek() {
             if group.delimiter() == delim {
@@ -1490,7 +1485,7 @@ impl TokenParser {
         }
     }
 
-    #[inline(never)]
+    
     pub fn eat_any_group(&mut self) -> Option<TokenTree> {
         if let Some(TokenTree::Group(group)) = self.peek() {
             let ret = Some(TokenTree::Group(group.clone()));
@@ -1500,7 +1495,7 @@ impl TokenParser {
         return None;
     }
 
-    #[inline(never)]
+    
     pub fn eat_visibility(&mut self) -> TokenStream {
         let mut tb = TokenBuilder::new();
         if let Some(pub_ident) = self.eat_ident("pub") {
